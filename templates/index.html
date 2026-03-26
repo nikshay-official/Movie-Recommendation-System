@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Movie Recommender</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #0f0f0f;
+    color: white;
+}
+
+/* HEADER */
+.header {
+    background: black;
+    padding: 20px;
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: #39ff14;
+    letter-spacing: 2px;
+}
+
+/* FORM SECTION */
+.container {
+    text-align: center;
+    margin: 40px 0;
+}
+
+select {
+    padding: 12px;
+    width: 350px;
+    border-radius: 6px;
+    border: none;
+    font-size: 16px;
+    outline: none;
+}
+
+button {
+    padding: 12px 20px;
+    background: #39ff14;
+    border: none;
+    margin-left: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 6px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #2ed10f;
+    transform: scale(1.05);
+}
+
+/* GRID */
+.movies {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    padding: 20px;
+}
+
+/* CARD */
+.card {
+    width: 200px;
+    background: #1c1c1c;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid transparent;
+}
+
+.card:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 15px #39ff14;
+    border: 1px solid #39ff14;
+}
+
+.card img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.card h3 {
+    padding: 10px;
+    font-size: 15px;
+    text-align: center;
+}
+
+/* FOOTER */
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: gray;
+    font-size: 14px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+    🎬 Movie Recommender
+</div>
+
+<div class="container">
+    <form action="/recommend" method="post">
+        <select name="movie">
+            {% for movie in movies %}
+                <option value="{{ movie }}">{{ movie }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Recommend</button>
+    </form>
+</div>
+
+{% if recommendations %}
+<div class="movies">
+    {% for i in range(recommendations|length) %}
+        <div class="card">
+            <img src="{{ posters[i] }}" alt="poster">
+            <h3>{{ recommendations[i] }}</h3>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="footer">
+    Built By Nikshay
+</div>
+
+</body>
+</html>
