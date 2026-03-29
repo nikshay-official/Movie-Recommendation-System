@@ -1,20 +1,45 @@
 from flask import Flask, render_template, request
 import pickle
 import requests
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
-# Initialize app
 app = Flask(__name__)
 
-# Load saved data
+# Load data
 movies = pickle.load(open('movies.pkl', 'rb'))
-similarity = pickle.load(open('similarity.pkl', 'rb'))
 
-# Recommendation function
+# Recompute similarity (since we removed similarity.pkl)
+cv = CountVectorizer(max_features=5000, stop_words='english')
+vectors = cv.fit_transform(movies['tags']).toarray()
+similarity = cosine_similarity(vectors)
+
+
+# Fetch poster
+def fetch_poster(movie_id):
+    try:
+        url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key=YOUR_API_KEY&language=en-US"
+        data = requests.get(url, timeout=5).json()
+
+        poster_path = data.get('poster_path')
+
+        if poster_path:
+            return "https://image.tmdb.org/t/p/w500/" + poster_path
+        else:
+            return "https://via.placeholder.com/500x750?text=No+Image"
+
+    except:
+        return "https://via.placeholder.com/500x750?text=Error"
+
+
+# Recommend function
 def recommend(movie):
     index = movies[movies['title'] == movie].index[0]
     distances = similarity[index]
 
-    movie_list = sorted(list(enumerate(distances)), key=lambda x: x[1], reverse=True)[1:6]
+    movie_list = sorted(list(enumerate(distances)),
+                        key=lambda x: x[1],
+                        reverse=True)[1:6]
 
     recommended_movies = []
     recommended_posters = []
@@ -27,14 +52,12 @@ def recommend(movie):
     return recommended_movies, recommended_posters
 
 
-# Home route
+# Routes
 @app.route('/')
 def home():
-    movie_list = movies['title'].values
-    return render_template('index.html', movies=movie_list)
+    return render_template('index.html', movies=movies['title'].values)
 
 
-# Recommendation route
 @app.route('/recommend', methods=['POST'])
 def recommend_movies():
     movie = request.form.get('movie')
@@ -47,19 +70,7 @@ def recommend_movies():
         posters=posters
     )
 
-import requests
-
-def fetch_poster(movie_id):
-    url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key=d14e3d76543380a02dfae74019898a46&language=en-US"
-    data = requests.get(url).json()
-    
-    poster_path = data.get('poster_path')
-    
-    if poster_path:
-        return "https://image.tmdb.org/t/p/w500/" + poster_path
-    else:
-        return "https://via.placeholder.com/500x750?text=No+Image"
 
 # Run app
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(debug=True)
